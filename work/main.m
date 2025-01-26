@@ -1,13 +1,6 @@
-D = importdata('Phase_L1.VEL');
-
-Time = D.data(:, 1);
-Hei = D.data(:, 4);
-
-clear D
-
-% mask = find(data(:, 1) >= 16130 & data(:, 1) <= 18549);
-
-% data = data(mask, :);
+DataFile = '../Data/Phase_L1.VEL';
+TimeCol = 1;
+DataCol = 4;
 
 % number of wavelets on freq-axis     
 j_max = 4;
@@ -15,16 +8,25 @@ j_max = 4;
 % number of wavelets on t-axis
 k_max = 25;
 
+% -----------end cfg-----------------------------
+
+D = importdata(DataFile);
+
+Time = D.data(:, TimeCol);
+Hei = D.data(:, DataCol);
+
+clear D
+
+% mask = find(data(:, 1) >= 16130 & data(:, 1) <= 18549);
+% data = data(mask, :);
+
+
 j_k_max = k_max * 2^j_max;
 
-% download time
-% Time = data(:, 1);
 Time_st = min(Time);
 Time_fin = max(Time);
 
-% download anomaly
-% Delta_g = data(:, 5);
-Delta_g = Hei;
+
 
 
 % normalize time
