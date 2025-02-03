@@ -1,63 +1,58 @@
-DataFile = '../Data/Phase_L1.VEL';
-TimeCol = 1;
-DataCol = 4;
+% Wavelet-approximation by LSE
+%
+% Version: one-level. Date: 31.01.2025
+close all; clc;
 
-% number of wavelets on freq-axis     
-j_max = 2;
+% Wavelet settings
+j     = -10;      % resolution level 
+k_max = 200;      % nr. of wavelets on t-axis
 
-% number of wavelets on t-axis
-k_max = 20;
+% GNSS data
+read_gnss_sr2nav; 
+close all
 
-% -----------end cfg-----------------------------
-
-D = importdata(DataFile);
-
-Time = D.data(:, TimeCol);
-Hei = D.data(:, DataCol);
-
-clear D
-
-% mask = find(data(:, 1) >= 16130 & data(:, 1) <= 18549);
-% data = data(mask, :);
-
-j_k_max = k_max * 2^j_max;
-
-Time_st = min(Time);
-Time_fin = max(Time);
-
-Delta_g  = Hei;
+% Interval & Input function
+TimeArray = TimeGPS(2000:end) - TimeGPS(2000);
+DG        = Hei_gps(2000:end); 
+Time_fin  = TimeArray(end);
 
 
-% normalize time
-time_wev = (Time - Time_st) / (Time_fin - Time_st) * j_k_max;
-
-Psi = zeros(length(Time), k_max*(2^(j_max+1) - 1));
-for t = 1 : length(Time)
-    shift = 1;
-    time = time_wev(t);
-    for j = 0 : j_max
-        for k = 0 : k_max * 2^j
-          Psi(t, k+shift) = wavel_trf(j, k, time);
-        end
-        shift = shift + k_max * 2^j;
-    end
+% Matrix of wavelet values
+Psi = zeros( length(TimeArray), k_max );
+for k = 1 : k_max
+   dT  = (2^j)*Time_fin/k_max;  % step of wavelet grid
+   t_k = k * dT;                % knot in grid
+   Psi(:,k) = wavel_trf_v2(j,t_k,TimeArray);   
 end
 
-d = Psi \ Delta_g  ;
+% LS estimation
+WCoeff = Psi \ DG;
+disp(['Nr. of wavelet-coef: ',num2str(max(size(WCoeff)))])
 
-Delta_g_app = Psi * d;
-Delta_g_lev = zeros(length(Time), j_max+1);
-shift = 1;
-for j = 0 : j_max
-    index = shift:k_max * 2^j+shift;
-    Delta_g_lev(:, j+1) = Psi(:, index) * d(index);
-    shift = shift + k_max * 2^j;
+disp(['Analysing SVD...'])
+s=svd(Psi);
+if s(1)/s(end)>10^16
+disp(['Warning: matrix is ill-conditioned'])    
 end
+disp(['Condition nr: ',num2str(s(1)/s(end))])
+
+
+% Wavelet-reconstruction
+DG_est = Psi * WCoeff;
 
 
 figure(1)
-hold
-plot(Time, Delta_g)
-plot(Time, Delta_g_app)
-plot(Time, Delta_g_lev)
-legend('true', 'comp', '1', '2', '3')
+plot(WCoeff); hold on;
+plot(WCoeff,'.')
+grid on;
+title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j)])
+xlabel('Number of coefficient')
+
+figure(2)
+plot(TimeArray,DG)
+hold on;
+plot(TimeArray, DG_est,'r')
+legend('true','estimate')
+grid on;
+title(['Reconstructed input function. MHat wavelet, level=',num2str(j)])
+xlabel('Time(s)')
