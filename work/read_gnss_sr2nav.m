@@ -63,7 +63,7 @@ hold on
 plot(TimeGPS,RmsVel,'r.')
 h = title(['GPS solution QC (Diff mode). Flight ', num2str(Date)]);
 h1 = xlabel('Time (s)');
-legend('RmsPos','RmsVel','Type')
+% legend('RmsPos','RmsVel','Type')
 grid on
 
 figure('Name','Sr2Nav - Vel'); clf;

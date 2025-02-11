@@ -4,7 +4,9 @@
 close all; clc;
 
 % Wavelet settings
-j     = -10;      % resolution level 
+% j     = -8 -5;      
+j_min = -8;
+j_max = -5;       % resolution level 
 k_max = 200;      % nr. of wavelets on t-axis
 
 % GNSS data
@@ -18,11 +20,14 @@ Time_fin  = TimeArray(end);
 
 
 % Matrix of wavelet values
-Psi = zeros( length(TimeArray), k_max );
-for k = 1 : k_max
-   dT  = (2^j)*Time_fin/k_max;  % step of wavelet grid
-   t_k = k * dT;                % knot in grid
-   Psi(:,k) = wavel_trf_v2(j,t_k,TimeArray);   
+
+Psi = zeros( length(TimeArray), (j_max - j_min + 1) * k_max );
+for j = j_min : j_max
+    for k = 1 : k_max
+       dT  = (2^j)*Time_fin/k_max;  % step of wavelet grid
+       t_k = k * dT;                % knot in grid
+       Psi(:,(j - j_min) * k_max + k) = wavel_trf(j,t_k,TimeArray);   
+    end
 end
 
 % LS estimation
@@ -45,7 +50,7 @@ figure(1)
 plot(WCoeff); hold on;
 plot(WCoeff,'.')
 grid on;
-title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j)])
+title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
 xlabel('Number of coefficient')
 
 figure(2)
@@ -54,5 +59,5 @@ hold on;
 plot(TimeArray, DG_est,'r')
 legend('true','estimate')
 grid on;
-title(['Reconstructed input function. MHat wavelet, level=',num2str(j)])
+title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
 xlabel('Time(s)')
