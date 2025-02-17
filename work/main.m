@@ -4,9 +4,9 @@
 close all; clc;
 
 % Wavelet settings
-j_min = -10;
-j_max = -8;       % resolution level 
-k_max = 40;      % nr. of wavelets on t-axis
+j_min = -12;
+j_max = -7;       % resolution level 
+k_max = 20;      % nr. of wavelets on t-axis
 
 % GNSS data
 % read_gnss_sr2nav; 
@@ -47,12 +47,17 @@ for j = j_min : j_max
        Psi(:,(j - j_min) * k_max + k) = wavel_trf(j,t_k,TimeArray);   
     end
 end
+OneDim = 3;
+if OneDim ~= 1
+    Psi = [Psi, zeros(size(Psi)), zeros(size(Psi));
+           zeros(size(Psi)),  Psi, zeros(size(Psi));
+           zeros(size(Psi)), zeros(size(Psi)), Psi;];
+    
+    DG = [DG1; DG2; DG3];
+else
+    DG = DG3;
+end
 
-Psi = [Psi, zeros(size(Psi)), zeros(size(Psi));
-       zeros(size(Psi)),  Psi, zeros(size(Psi));
-       zeros(size(Psi)), zeros(size(Psi)), Psi;];
-
-DG = [DG1; DG2; DG3];
 % LS estimation
 WCoeff = Psi \ DG;
 disp(['Nr. of wavelet-coef: ',num2str(max(size(WCoeff)))])
@@ -72,36 +77,65 @@ DG_est1 = DG_est(1:end/3, :);
 DG_est2 = DG_est(end/3+1:2*end/3, :);
 DG_est3 = DG_est(2*end/3+1:end, :);
 
+
 figure(1)
-plot(WCoeff); hold on;
-plot(WCoeff,'.')
+plot(TimeArray,(DG1-DG_est1)*10^5)
+hold on;
+% plot(TimeArray, DG_est1,'r')
+% legend('true','estimate')
 grid on;
-title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
-xlabel('Number of coefficient')
+title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
+xlabel('Time(s)')
 
 figure(2)
-plot(TimeArray,DG1)
+plot(TimeArray,(DG2-DG_est2)*10^5)
 hold on;
-plot(TimeArray, DG_est1,'r')
-legend('true','estimate')
+% plot(TimeArray, DG_est2,'r')
+% legend('true','estimate')
 grid on;
 title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
 xlabel('Time(s)')
 
 figure(3)
-plot(TimeArray,DG2)
+plot(TimeArray,(DG3-DG_est3)*10^5)
 hold on;
-plot(TimeArray, DG_est2,'r')
-legend('true','estimate')
+% plot(TimeArray, DG_est3,'r')
+% legend('true','estimate')
 grid on;
 title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
 xlabel('Time(s)')
 
+delta = j_max - j_min +1;
+
+WCoeff1 = WCoeff(1:length(WCoeff)/3);
 figure(4)
-plot(TimeArray,DG3)
-hold on;
-plot(TimeArray, DG_est3,'r')
-legend('true','estimate')
-grid on;
-title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
-xlabel('Time(s)')
+for i = 1:delta
+    subplot(delta,1,i)
+    WCoeffSub = WCoeff1((i-1)/delta*end+1:i/delta*end);
+    plot(WCoeffSub); hold on;
+    plot(WCoeffSub,'.')
+    title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min+i-1)])
+    xlabel('Number of coefficient')
+end
+
+WCoeff2 = WCoeff(length(WCoeff)/3+1:2*length(WCoeff)/3);
+figure(5)
+for i = 1:delta
+    subplot(delta,1,i)
+    WCoeffSub = WCoeff2((i-1)/delta*end+1:i/delta*end);
+    plot(WCoeffSub); hold on;
+    plot(WCoeffSub,'.')
+    title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min+i-1)])
+    xlabel('Number of coefficient')
+end
+
+WCoeff3 = WCoeff(2*length(WCoeff)/3+1:end);
+figure(6)
+for i = 1:delta
+    subplot(delta,1,i)
+    WCoeffSub = WCoeff3((i-1)/delta*end+1:i/delta*end);
+    plot(WCoeffSub); hold on;
+    plot(WCoeffSub,'.')
+    title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min+i-1)])
+    xlabel('Number of coefficient')
+end
