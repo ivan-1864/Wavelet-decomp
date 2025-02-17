@@ -4,18 +4,36 @@
 close all; clc;
 
 % Wavelet settings
-% j     = -8 -5;      
-j_min = -8;
-j_max = -5;       % resolution level 
-k_max = 200;      % nr. of wavelets on t-axis
+j_min = -10;
+j_max = -8;       % resolution level 
+k_max = 40;      % nr. of wavelets on t-axis
 
 % GNSS data
-read_gnss_sr2nav; 
-close all
+% read_gnss_sr2nav; 
+% close all
+
+Filename_ggm = '../data/XGM2019_400.dat';
+fid        =  fopen(Filename_ggm,'r');              
+ggm        =  textscan(fid,'%f %f %f %f %f %f %f','HeaderLines',44);  
+fclose(fid);
+
+TimeGPS = ggm{1};
+
+Lon = ggm{2};
+Lat = ggm{3};
+
+DG3 = 10^(-5)*ggm{5};
+DG1 = -deg2rad(ggm{6}/ 3600) .* Geodesy_NormalGravity(ggm{3}, ggm{4});
+DG2 = -deg2rad(ggm{7}/ 3600) .* Geodesy_NormalGravity(ggm{3}, ggm{4});
+
+start   = 200;
+fin     = 1478;
 
 % Interval & Input function
-TimeArray = TimeGPS(2000:end) - TimeGPS(2000);
-DG        = Hei_gps(2000:end); 
+TimeArray = TimeGPS(start:fin) - TimeGPS(start);
+DG1        = DG1(start:fin); 
+DG2        = DG2(start:fin); 
+DG3        = DG3(start:fin); 
 Time_fin  = TimeArray(end);
 
 
@@ -30,6 +48,11 @@ for j = j_min : j_max
     end
 end
 
+Psi = [Psi, zeros(size(Psi)), zeros(size(Psi));
+       zeros(size(Psi)),  Psi, zeros(size(Psi));
+       zeros(size(Psi)), zeros(size(Psi)), Psi;];
+
+DG = [DG1; DG2; DG3];
 % LS estimation
 WCoeff = Psi \ DG;
 disp(['Nr. of wavelet-coef: ',num2str(max(size(WCoeff)))])
@@ -45,6 +68,9 @@ disp(['Condition nr: ',num2str(s(1)/s(end))])
 % Wavelet-reconstruction
 DG_est = Psi * WCoeff;
 
+DG_est1 = DG_est(1:end/3, :);
+DG_est2 = DG_est(end/3+1:2*end/3, :);
+DG_est3 = DG_est(2*end/3+1:end, :);
 
 figure(1)
 plot(WCoeff); hold on;
@@ -54,9 +80,27 @@ title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min),'-'
 xlabel('Number of coefficient')
 
 figure(2)
-plot(TimeArray,DG)
+plot(TimeArray,DG1)
 hold on;
-plot(TimeArray, DG_est,'r')
+plot(TimeArray, DG_est1,'r')
+legend('true','estimate')
+grid on;
+title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
+xlabel('Time(s)')
+
+figure(3)
+plot(TimeArray,DG2)
+hold on;
+plot(TimeArray, DG_est2,'r')
+legend('true','estimate')
+grid on;
+title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
+xlabel('Time(s)')
+
+figure(4)
+plot(TimeArray,DG3)
+hold on;
+plot(TimeArray, DG_est3,'r')
 legend('true','estimate')
 grid on;
 title(['Reconstructed input function. MHat wavelet, level=',num2str(j_min),'-',num2str(j_max)])
