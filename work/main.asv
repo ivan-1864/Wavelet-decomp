@@ -47,9 +47,9 @@ n = length(WCoeff);
 
 % Wavelet-reconstruction
 DG_est = Psi * WCoeff;
-rms = rmse(DG, DG_est);
+rms = round(rmse(DG, DG_est), 3);
 
-df = [df; j_min, j_max, k_max, n, rms];
+df = [df; j_min, j_min, k_max, n, rms];
 
 
 % figure(1)
