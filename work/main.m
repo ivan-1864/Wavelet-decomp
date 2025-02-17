@@ -1,26 +1,3 @@
-% Wavelet-approximation by LSE
-%
-% Version: one-level. Date: 31.01.2025
-% close all; clc;
-
-% % Wavelet settings
-% j_min = -8;
-% j_max = -7;       % resolution level 
-% k_max = 200;      % nr. of wavelets on t-axis
-
-% GNSS data
-% read_gnss_sr2nav; 
-% read_ggm;
-
-% close all
-
-% Interval & Input function
-% start = 200;
-% fin = 1478;
-% TimeArray = TimeGPS(start:end) - TimeGPS(start);
-% DG        = DG(start:end); 
-% Time_fin  = TimeArray(end);
-
 
 % Matrix of wavelet values
 
@@ -32,24 +9,31 @@ for j = j_min : j_max
        Psi(:,(j - j_min) * k_max + k) = wavel_trf(j,t_k,TimeArray);   
     end
 end
+Psi = [Psi, zeros(size(Psi)), zeros(size(Psi));
+       zeros(size(Psi)),  Psi, zeros(size(Psi));
+       zeros(size(Psi)), zeros(size(Psi)), Psi;];
+
+DG = [DG1; DG2; DG3];
 
 % LS estimation
 WCoeff = Psi \ DG;
-% disp(['Nr. of wavelet-coef: ',num2str(max(size(WCoeff)))])
 
-% disp(['Analysing SVD...'])
-% s=svd(Psi);
-% if s(1)/s(end)>10^16
-% disp(['Warning: matrix is ill-conditioned'])    
-% end
-% disp(['Condition nr: ',num2str(s(1)/s(end))])
 n = length(WCoeff);
 
 % Wavelet-reconstruction
 DG_est = Psi * WCoeff;
+
+DG_est1 = DG_est(1:end/3, :);
+DG_est2 = DG_est(end/3+1:2*end/3, :);
+DG_est3 = DG_est(2*end/3+1:end, :);
+
+rms1 = rmse(DG1, DG_est1);
+rms2 = rmse(DG2, DG_est2);
+rms3 = rmse(DG3, DG_est3);
 rms = rmse(DG, DG_est);
 
-df = [df; j_min, j_max, k_max, n, rms];
+df = [df; j_min, j_max, k_max, n, rms1, rms2, rms3, rms];
+
 
 
 % figure(1)
