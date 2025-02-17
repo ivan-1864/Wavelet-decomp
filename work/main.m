@@ -3,16 +3,26 @@
 % Version: one-level. Date: 31.01.2025
 close all; clc;
 
+% для 400
+% -11 -8    20 -- оптимально по rmse
+% -9  -9    100 -- интересно по уровням
+% -12 -7    20 -- наибольший размах
+
+% для 1000
+% -9  -9  100 -- оптимально по rmse
+% -10 -8  40 -- несколько уровней
+
+
 % Wavelet settings
-j_min = -12;
-j_max = -7;       % resolution level 
-k_max = 20;      % nr. of wavelets on t-axis
+j_min = -10;
+j_max = -8;       % resolution level 
+k_max = 40;      % nr. of wavelets on t-axis
 
 % GNSS data
 % read_gnss_sr2nav; 
 % close all
 
-Filename_ggm = '../data/XGM2019_400.dat';
+Filename_ggm = '../data/XGM2019_1000.dat';
 fid        =  fopen(Filename_ggm,'r');              
 ggm        =  textscan(fid,'%f %f %f %f %f %f %f','HeaderLines',44);  
 fclose(fid);
@@ -114,7 +124,7 @@ for i = 1:delta
     WCoeffSub = WCoeff1((i-1)/delta*end+1:i/delta*end);
     plot(WCoeffSub); hold on;
     plot(WCoeffSub,'.')
-    title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min+i-1)])
+    title(['\Delta g_1 coeffiсients, coeffiсientslevel=',num2str(j_min+i-1)])
     xlabel('Number of coefficient')
 end
 
@@ -125,7 +135,7 @@ for i = 1:delta
     WCoeffSub = WCoeff2((i-1)/delta*end+1:i/delta*end);
     plot(WCoeffSub); hold on;
     plot(WCoeffSub,'.')
-    title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min+i-1)])
+    title(['\Delta g_2 coeffiсients, level=',num2str(j_min+i-1)])
     xlabel('Number of coefficient')
 end
 
@@ -136,6 +146,6 @@ for i = 1:delta
     WCoeffSub = WCoeff3((i-1)/delta*end+1:i/delta*end);
     plot(WCoeffSub); hold on;
     plot(WCoeffSub,'.')
-    title(['Estimated wavelet-coefficients. MHat wavelet, level=',num2str(j_min+i-1)])
+    title(['\Delta g_3 coeffiсients, level=',num2str(j_min+i-1)])
     xlabel('Number of coefficient')
 end
