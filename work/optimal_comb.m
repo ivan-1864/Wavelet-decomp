@@ -1,14 +1,19 @@
 Filename_ggm = '../data/XGM2019_1000.dat';
 fid        =  fopen(Filename_ggm,'r');              
-ggm        =  textscan(fid,'%f %f %f %f %f %f %f','HeaderLines',44);  
+ggm1000        =  textscan(fid,'%f %f %f %f %f %f %f','HeaderLines',44);  
 fclose(fid);
 
-TimeGPS = ggm{1};
+Filename_ggm = '../data/XGM2019_400.dat';
+fid        =  fopen(Filename_ggm,'r');              
+ggm400        =  textscan(fid,'%f %f %f %f %f %f %f','HeaderLines',44);  
+fclose(fid);
+
+TimeGPS = ggm400{1};
 
 
-DG3 = 10^(-5)*ggm{5};
-DG1 = -deg2rad(ggm{6}/ 3600) .* Geodesy_NormalGravity(ggm{3}, ggm{4});
-DG2 = -deg2rad(ggm{7}/ 3600) .* Geodesy_NormalGravity(ggm{3}, ggm{4});
+DG3 = 10^(-5)*(ggm1000{5}-ggm400{5});
+DG1 = -deg2rad((ggm1000{6}-ggm400{6})/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
+DG2 = -deg2rad((ggm1000{7}-ggm400{7})/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
 
 % Interval & Input function
 TimeArray = TimeGPS(start:fin) - TimeGPS(start);
