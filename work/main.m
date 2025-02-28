@@ -14,9 +14,9 @@ close all; clc;
 
 
 % Wavelet settings
-j_min = -20;
-j_max = -15;       % resolution level 
-k_max = 40;      % nr. of wavelets on t-axis
+j_min = -10;
+j_max = -5;       % resolution level 
+k_max = 20;      % nr. of wavelets on t-axis
 
 
 
@@ -33,8 +33,12 @@ fclose(fid);
 TimeGPS = ggm400{1};
 
 DG3 = 10^(-5)*(ggm1000{5}-ggm400{5});
-DG1 = -deg2rad(ggm1000{6}-ggm400{6}/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
-DG2 = -deg2rad(ggm1000{7}-ggm400{7}/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
+DG1 = -deg2rad((ggm1000{6}-ggm400{6})/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
+DG2 = -deg2rad((ggm1000{7}-ggm400{7})/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
+
+% DG3 = 10^(-5)*(ggm400{5});
+% DG1 = -deg2rad((ggm400{6})/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
+% DG2 = -deg2rad((ggm400{7})/ 3600) .* Geodesy_NormalGravity(ggm400{3}, ggm400{4});
 
 start   = 200;
 fin     = 1478;
